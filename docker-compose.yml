@@ -100,11 +100,7 @@ services:
     volumes:
       - ./:/workspace
     entrypoint: ["/bin/bash", "-c"]
-<<<<<<< HEAD
     command: ["spark-submit --master spark://spark-master:7077 --driver-memory 2g --executor-memory 3g --conf spark.hadoop.fs.permissions.umask-mode=000 jobs/spark_full_pipeline.py --input 'hdfs://namenode:9000/geotrack/raw/Data/*/Trajectory/*.plt' --output-root hdfs://namenode:9000/geotrack/curated --manifest /workspace/data/processed/full-manifest.json"]
-=======
-    command: ["spark-submit --master spark://spark-master:7077 --driver-memory 4g --executor-memory 4g jobs/spark_full_pipeline.py --input 'hdfs://namenode:9000/geotrack/raw/Data/*/Trajectory/*.plt' --output-root /workspace/data/processed/full-curated --manifest /workspace/data/processed/full-manifest.json"]
->>>>>>> upstream/main
     depends_on:
       - namenode
       - spark-master

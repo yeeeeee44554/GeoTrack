@@ -2,12 +2,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from jobs.full_serving_index import build_index
+from jobs.full_serving_index import _sample_indices, build_index
 from backend.full_index_store import FullIndexStore
 from backend import full_api
 
 
 class FullIndexTests(unittest.TestCase):
+    def test_sample_indices_are_unique_when_size_is_just_over_limit(self):
+        indices = _sample_indices(5, 4)
+        self.assertEqual(indices, [0, 1, 2, 4])
+        self.assertEqual(len(indices), len(set(indices)))
+
     def test_index_rejects_invalid_build_parameters(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

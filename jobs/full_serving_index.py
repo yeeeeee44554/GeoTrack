@@ -78,11 +78,12 @@ def _iso(value: datetime) -> str:
 def _sample_indices(size: int, maximum: int) -> list[int]:
     if size <= maximum:
         return list(range(size))
-    stride = max(1, math.ceil((size - 1) / max(1, maximum - 1)))
-    indices = list(range(0, size, stride))
-    if indices[-1] != size - 1:
-        indices.append(size - 1)
-    return indices[: maximum - 1] + [size - 1]
+    # Pick evenly spaced, unique indices and always retain the final point.
+    # The previous stride/truncate implementation could already contain the
+    # final index, then append it a second time (e.g. size=5, maximum=4),
+    # violating the trajectory_points primary key during a full build.
+    denominator = max(1, maximum - 1)
+    return [(position * (size - 1)) // denominator for position in range(maximum)]
 
 
 def _clean_points(path: Path) -> tuple[list[dict[str, Any]], dict[str, int]]:

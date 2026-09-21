@@ -74,17 +74,17 @@ make full-load
 
 Windows 可执行：
 
-`powershell
+```powershell
 .\\scripts\\acceptance.ps1
-`
+```
 
 或使用 Make：
 
-`	ext
+```text
 make acceptance
-`
+```
 
-该命令依次运行 Python 测试、服务载荷 dry-run、Compose 配置检查和前端生产构建。当前本机已验证演示子集（60,000 点、72 条轨迹、46 个停留点）；Docker Desktop/HDFS/Spark/MobilityDB 的真实启动需在 Docker 引擎可用的目标机器补做，并将日志写入报告。
+该命令依次运行 Python 测试、服务载荷 dry-run、Compose 配置检查和前端生产构建。当前本机已验证全量本地索引（24,751,613 个有效点、18,670 条轨迹、182 个用户）及演示子集；Docker Desktop/HDFS/Spark/MobilityDB 的真实启动需在 Docker 引擎可用的目标机器补做，并将日志写入报告。`docker compose config` 只证明配置可解析，不等同于集群已运行。
 
 ## 课程交付物
 

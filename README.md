@@ -93,5 +93,3 @@ make acceptance
 - `docs/prompts/`：Vibe Coding 提示词记录
 - `sql/001_schema.sql`：PostGIS/MobilityDB 服务表
 - `docker-compose.yml`：四层本地演示环境
-
-课程要求 2–4 人分组；如果以单人形式提交，请先取得教师书面确认。

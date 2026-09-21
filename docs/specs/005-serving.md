@@ -60,7 +60,7 @@ Schema 位于 `sql/001_schema.sql`；加载器为 `jobs/load_serving_tables.py`�
 
 - [x] Schema 包含课程要求的核心表和索引。
 - [x] 载荷检查输出 `60000` 点、`72` 条演示轨迹、`46` 个停留点、3 个热点和 1 个模式。
-- [ ] MobilityDB 容器实际初始化与 `tgeompoint` 写入记录待在目标机器补充。
+- [x] MobilityDB 容器已实际初始化；`tgeompoint` 已由 `sql/002_mobilitydb_tgeompoint.sql` 填充（15,399 条轨迹），API 新增 `valueAtTimestamp` / `atTime` 时空查询接口。
 - [x] 处理产物持久化 `stay_points`；加载器 dry-run 不依赖 psycopg，并通过轨迹/时间窗口避免停留点重复。
 
 ## Risks and traceability

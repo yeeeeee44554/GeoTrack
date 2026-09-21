@@ -41,6 +41,10 @@ export function getFullTrajectory(trajectoryId) {
   return getJson(`/api/full/trajectories/${encodeURIComponent(trajectoryId)}`)
 }
 
+export function getSpatiotemporalAt(trajectoryId, ts) {
+  return getJson(withQuery('/api/full/spatiotemporal/at', { trajectory_id: trajectoryId, ts }))
+}
+
 export function getJob(jobId) {
   return getJson(`/api/jobs/${encodeURIComponent(jobId)}`)
 }

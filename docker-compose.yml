@@ -23,7 +23,9 @@ services:
     entrypoint: ["/bin/bash", "-lc"]
     command: ["hdfs datanode"]
   spark-master:
-    image: bitnamilegacy/spark:3.5.4
+    build:
+      context: ./docker
+      dockerfile: spark-pandas.Dockerfile
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -36,16 +38,20 @@ services:
     volumes:
       - "./Geolife Trajectories 1.3:/dataset:ro"
   spark-worker:
-    image: bitnamilegacy/spark:3.5.4
+    build:
+      context: ./docker
+      dockerfile: spark-pandas.Dockerfile
+    user: root
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=2G
-      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=4
     depends_on:
       - spark-master
     volumes:
       - "./Geolife Trajectories 1.3:/dataset:ro"
+      - ./:/workspace
   postgres:
     image: ${POSTGRES_IMAGE:-mobilitydb/mobilitydb:latest}
     environment:
@@ -94,7 +100,7 @@ services:
     volumes:
       - ./:/workspace
     entrypoint: ["/bin/bash", "-c"]
-    command: ["spark-submit --driver-memory 4g --executor-memory 4g jobs/spark_full_pipeline.py --input 'hdfs://namenode:9000/geotrack/raw/Data/*/Trajectory/*.plt' --output-root /workspace/data/processed/full-curated --manifest /workspace/data/processed/full-manifest.json"]
+    command: ["spark-submit --master spark://spark-master:7077 --driver-memory 2g --executor-memory 3g --conf spark.hadoop.fs.permissions.umask-mode=000 jobs/spark_full_pipeline.py --input 'hdfs://namenode:9000/geotrack/raw/Data/*/Trajectory/*.plt' --output-root hdfs://namenode:9000/geotrack/curated --manifest /workspace/data/processed/full-manifest.json"]
     depends_on:
       - namenode
       - spark-master

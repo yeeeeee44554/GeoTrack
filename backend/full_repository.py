@@ -10,6 +10,23 @@ from typing import Any, Iterator
 from .full_index_store import FullIndexStore
 
 
+def _pattern_label(cluster_id: int, profile: list[float], avg_trips: float) -> str:
+    """Human-readable name for a KMeans time-of-day cluster.
+
+    Derived from the 24h activity profile so the three clusters never share a
+    placeholder name (the pipeline stores a single hard-coded label).
+    """
+    if len(profile) != 24:
+        return f"模式 {cluster_id + 1}"
+    peak = max(range(24), key=lambda i: profile[i])
+    night = sum(profile[21:24]) + sum(profile[0:5])
+    if night >= 0.22 or (peak >= 15 and night >= 0.15):
+        return "午后夜间活动型"
+    if avg_trips >= 110:
+        return "高频全天型"
+    return "早晚通勤型"
+
+
 class PostgresFullRepository:
     """Read the currently published batch from PostGIS.
 
@@ -139,6 +156,50 @@ class PostgresFullRepository:
             item["sample_limit"] = limit
             return item
 
+    def trajectory_at(self, trajectory_id: str, ts: str) -> dict[str, Any] | None:
+        """Position at an instant, using MobilityDB's time-aware valueAtTimestamp."""
+        with self._db() as connection:
+            run_id = self._run_id(connection)
+            if not run_id:
+                return None
+            row = connection.execute(
+                """SELECT trajectory_id, user_id, start_ts, end_ts,
+                          ST_AsGeoJSON(valueAtTimestamp(temporal_geom, %s::timestamptz)) AS position_json
+                   FROM trajectories
+                   WHERE trajectory_id=%s AND run_id=%s AND temporal_geom IS NOT NULL""",
+                (ts, trajectory_id, run_id),
+            ).fetchone()
+            if not row:
+                return None
+            item = dict(row)
+            position_json = item.pop("position_json", None)
+            item["position"] = json.loads(position_json) if position_json else None
+            item["query_ts"] = ts
+            return item
+
+    def trajectory_segment(self, trajectory_id: str, start: str, end: str) -> dict[str, Any] | None:
+        """Trajectory geometry restricted to a time range (MobilityDB atTime)."""
+        span = f"[{start}, {end}]"
+        with self._db() as connection:
+            run_id = self._run_id(connection)
+            if not run_id:
+                return None
+            row = connection.execute(
+                """SELECT trajectory_id, user_id,
+                          ST_AsGeoJSON(trajectory(atTime(temporal_geom, %s::tstzspan))) AS geometry_json
+                   FROM trajectories
+                   WHERE trajectory_id=%s AND run_id=%s AND temporal_geom IS NOT NULL""",
+                (span, trajectory_id, run_id),
+            ).fetchone()
+            if not row:
+                return None
+            item = dict(row)
+            geometry_json = item.pop("geometry_json", None)
+            item["geometry"] = json.loads(geometry_json) if geometry_json else None
+            item["start"] = start
+            item["end"] = end
+            return item
+
     def hotspots(self, limit: int = 20, min_users: int = 0) -> list[dict[str, Any]]:
         with self._db() as connection:
             run_id = self._run_id(connection)
@@ -169,6 +230,7 @@ class PostgresFullRepository:
                 profile = item.get("hourly_profile") or []
                 if len(profile) == 24:
                     item["hourly_profile"] = profile[16:] + profile[:16]
+                item["label"] = _pattern_label(item.get("cluster_id", 0), item.get("hourly_profile") or [], float(item.get("avg_trip_count") or 0))
                 result.append(item)
             return result
 

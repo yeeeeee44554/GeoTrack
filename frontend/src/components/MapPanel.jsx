@@ -6,7 +6,7 @@ function lineCoordinates(geometry) {
   return geometry?.coordinates?.map(([longitude, latitude]) => [latitude, longitude]) ?? []
 }
 
-export default function MapPanel({ trajectories = [], hotspots = [], selectedHotspot, onHotspotSelect }) {
+export default function MapPanel({ trajectories = [], hotspots = [], selectedHotspot, onHotspotSelect, focusPoint }) {
   return (
     <div className="map-wrap">
       <MapContainer center={BEIJING} zoom={10} scrollWheelZoom className="map-canvas">
@@ -44,10 +44,22 @@ export default function MapPanel({ trajectories = [], hotspots = [], selectedHot
             </CircleMarker>
           )
         })}
+        {focusPoint && focusPoint.latitude != null && focusPoint.longitude != null ? (
+          <CircleMarker
+            center={[focusPoint.latitude, focusPoint.longitude]}
+            radius={10}
+            pathOptions={{ color: '#ff2d55', fillColor: '#ff2d55', fillOpacity: 1, weight: 3 }}
+          >
+            <Tooltip direction="top" offset={[0, -8]}>
+              时刻位置 · {focusPoint.latitude.toFixed(4)}, {focusPoint.longitude.toFixed(4)}
+            </Tooltip>
+          </CircleMarker>
+        ) : null}
       </MapContainer>
       <div className="map-legend">
         <span><i className="legend-dot trajectory" />轨迹线</span>
         <span><i className="legend-dot hotspot" />热点中心</span>
+        {focusPoint ? <span><i className="legend-dot" style={{ background: '#ff2d55' }} />时刻位置</span> : null}
         <span className="map-coordinates">39.925°N · 116.395°E</span>
       </div>
     </div>

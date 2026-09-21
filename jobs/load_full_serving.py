@@ -130,6 +130,12 @@ def load(root: Path, dsn: str, run_id: str | None = None, manifest_uri: str | No
                     cur.execute("DELETE FROM trajectory_points p USING stg_trajectories t WHERE p.trajectory_id=t.trajectory_id")
                     cur.execute("""INSERT INTO trajectory_points(run_id,user_id,trajectory_id,seq,ts,latitude,longitude,altitude_m)
                       SELECT run_id,user_id,trajectory_id,seq,ts,latitude,longitude,altitude_m FROM stg_points""")
+                    # MobilityDB: build one tgeompoint per trajectory (time-aware queries).
+                    cur.execute("""UPDATE trajectories t SET temporal_geom = tt.g
+                      FROM (SELECT p.trajectory_id,
+                                   tgeompointseq(ARRAY_AGG(tgeompoint(ST_SetSRID(ST_MakePoint(p.longitude,p.latitude),4326), p.ts) ORDER BY p.seq),'linear') AS g
+                            FROM trajectory_points p WHERE p.run_id=%s GROUP BY p.trajectory_id) tt
+                      WHERE t.trajectory_id=tt.trajectory_id AND t.run_id=%s""", (run_id, run_id))
                     cur.execute("DELETE FROM stay_points s USING stg_trajectories t WHERE s.trajectory_id=t.trajectory_id")
                     cur.execute("""INSERT INTO stay_points(run_id,user_id,trajectory_id,start_ts,end_ts,duration_s,center_geom,radius_m)
                       SELECT run_id,user_id,trajectory_id,start_ts,end_ts,duration_s,ST_SetSRID(ST_MakePoint(longitude,latitude),4326),radius_m FROM stg_stays""")

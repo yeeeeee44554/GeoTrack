@@ -64,4 +64,4 @@ API 或处理结果不可用时，前端 SHALL 使用小型脱敏种子数据显
 
 ## Risks and traceability
 
-单人项目不满足课程默认 2–4 人分组，必须取得教师书面批准。对应 `docs/requirements.md` 的目标、合规和非功能需求，后续由 Spec 002–008 细化。
+对应 `docs/requirements.md` 的目标、合规和非功能需求，后续由 Spec 002–008 细化。

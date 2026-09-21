@@ -88,6 +88,32 @@ def full_trajectory(trajectory_id: str, sample_limit: int = Query(500, ge=1, le=
     return result
 
 
+@router.get("/spatiotemporal/at")
+def full_spatiotemporal_at(trajectory_id: str, ts: str) -> dict[str, Any]:
+    """Position of one trajectory at a single instant (MobilityDB valueAtTimestamp)."""
+    store = _store()
+    method = getattr(store, "trajectory_at", None)
+    if method is None:
+        raise HTTPException(status_code=501, detail="spatiotemporal queries require the Postgres/MobilityDB backend")
+    result = method(trajectory_id, ts)
+    if result is None:
+        raise HTTPException(status_code=404, detail="trajectory not found or timestamp outside its extent")
+    return result
+
+
+@router.get("/spatiotemporal/segment")
+def full_spatiotemporal_segment(trajectory_id: str, start: str, end: str) -> dict[str, Any]:
+    """Trajectory geometry restricted to a time range (MobilityDB atTime)."""
+    store = _store()
+    method = getattr(store, "trajectory_segment", None)
+    if method is None:
+        raise HTTPException(status_code=501, detail="spatiotemporal queries require the Postgres/MobilityDB backend")
+    result = method(trajectory_id, start, end)
+    if result is None:
+        raise HTTPException(status_code=404, detail="trajectory not found or no points in the requested range")
+    return result
+
+
 @router.get("/hotspots")
 def full_hotspots(limit: int = Query(20, ge=1, le=200), min_users: int = Query(0, ge=0)) -> list[dict[str, Any]]:
     return _store().hotspots(limit, min_users)

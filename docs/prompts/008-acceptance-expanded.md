@@ -7,7 +7,7 @@
 
 自动验证至少包括 Python 单元/API 测试、前端生产构建、docker compose config、服务载荷 dry-run 和 Git 合规检查。人工演示按总览→轨迹→热点→筛选/参数→模式→任务质量→四层架构执行，关键 API 目标不超过 3 秒。
 
-报告必须同时写明官方规模和演示规模、数据集许可、清洗和算法参数、Spark/HDFS 实际运行证据、PostGIS/MobilityDB 证据、未完成项、交通方式识别延期原因、单人分组审批状态和每个人的真实贡献。每个阶段列出 Spec、Prompt、提交号和测试结果。准备 PPT、5 分钟内 MP4 备份视频和 v1.0-course 标签。
+报告必须同时写明官方规模和演示规模、数据集许可、清洗和算法参数、Spark/HDFS 实际运行证据、PostGIS/MobilityDB 证据、未完成项和交通方式识别延期原因。每个阶段列出 Spec、Prompt、提交号和测试结果。准备 PPT、5 分钟内 MP4 备份视频和 v1.0-course 标签。
 ```
 
 ## 交付检查
